@@ -49,6 +49,51 @@ class BankingTools(ToolKitBase):
 
     # Customer Management Tools
     @is_tool(ToolType.READ)
+    def find_customer_by_name(self, first_name: str, last_name: str) -> Dict[str, Any]:
+        """Find customer ID by first and last name."""
+        customers = [
+            c for c in self.db.customers 
+            if c.first_name.lower() == first_name.lower() and c.last_name.lower() == last_name.lower()
+        ]
+        
+        if not customers:
+            return {"error": f"Müşteri {first_name} {last_name} bulunamadı"}
+        
+        if len(customers) > 1:
+            return {
+                "error": "Birden fazla müşteri bulundu",
+                "customers": [
+                    {
+                        "customer_id": c.customer_id,
+                        "name": f"{c.first_name} {c.last_name}",
+                        "email": c.email
+                    }
+                    for c in customers
+                ]
+            }
+        
+        customer = customers[0]
+        return {
+            "customer_id": customer.customer_id,
+            "name": f"{customer.first_name} {customer.last_name}",
+            "email": customer.email,
+        }
+    
+    @is_tool(ToolType.READ)
+    def find_customer_by_tc_no(self, tc_no: str) -> Dict[str, Any]:
+        """Find customer ID by TC Kimlik No (Turkish ID number)."""
+        customer = next((c for c in self.db.customers if c.tc_no == tc_no), None)
+        
+        if not customer:
+            return {"error": f"TC Kimlik No {tc_no} ile müşteri bulunamadı"}
+        
+        return {
+            "customer_id": customer.customer_id,
+            "name": f"{customer.first_name} {customer.last_name}",
+            "email": customer.email,
+        }
+    
+    @is_tool(ToolType.READ)
     def get_customer_info(self, customer_id: str) -> Dict[str, Any]:
         """Get customer information by customer ID."""
         customer = next((c for c in self.db.customers if c.customer_id == customer_id), None)
@@ -68,12 +113,39 @@ class BankingTools(ToolKitBase):
 
     @is_tool(ToolType.READ)
     def verify_customer_identity(self, customer_id: str, tc_no: str, date_of_birth: str) -> Dict[str, Any]:
-        """Verify customer identity using TC Kimlik No and date of birth."""
+        """Verify customer identity using TC Kimlik No and date of birth.
+        
+        Accepts date in multiple formats: YYYY-MM-DD, DD/MM/YYYY, DD-MM-YYYY, etc.
+        """
+        from datetime import datetime
+        
         customer = next((c for c in self.db.customers if c.customer_id == customer_id), None)
         if not customer:
             return {"error": f"Müşteri {customer_id} bulunamadı"}
         
-        if customer.tc_no == tc_no and customer.date_of_birth == date_of_birth:
+        # Normalize date formats for comparison
+        def normalize_date(date_str):
+            """Convert various date formats to YYYY-MM-DD for comparison."""
+            date_formats = [
+                '%Y-%m-%d',      # 1985-03-15
+                '%d/%m/%Y',      # 15/03/1985
+                '%d-%m-%Y',      # 15-03-1985
+                '%d.%m.%Y',      # 15.03.1985
+                '%m/%d/%Y',      # 03/15/1985
+            ]
+            
+            for fmt in date_formats:
+                try:
+                    dt = datetime.strptime(date_str, fmt)
+                    return dt.strftime('%Y-%m-%d')
+                except ValueError:
+                    continue
+            return date_str  # Return as-is if no format matches
+        
+        customer_dob_normalized = normalize_date(customer.date_of_birth)
+        provided_dob_normalized = normalize_date(date_of_birth)
+        
+        if customer.tc_no == tc_no and customer_dob_normalized == provided_dob_normalized:
             return {"verified": True, "customer_name": f"{customer.first_name} {customer.last_name}"}
         else:
             return {"verified": False, "error": "Kimlik doğrulama başarısız"}

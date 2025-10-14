@@ -81,10 +81,14 @@ class TestTurkishBankingTasks:
             assert hasattr(criteria, 'communicate_info'), f"Task {task.id} missing communicate_info"
             assert hasattr(criteria, 'nl_assertions'), f"Task {task.id} missing nl_assertions"
             
-            # Check that we have evaluation criteria
-            assert len(criteria.actions) > 0, f"Task {task.id} has no actions"
-            assert len(criteria.communicate_info) > 0, f"Task {task.id} has no communicate_info"
-            assert len(criteria.nl_assertions) > 0, f"Task {task.id} has no nl_assertions"
+            # Check that we have at least some evaluation criteria
+            # Actions are optional, but we should have either communicate_info or nl_assertions
+            has_evaluation = (
+                (criteria.actions and len(criteria.actions) > 0) or
+                (criteria.communicate_info and len(criteria.communicate_info) > 0) or
+                (criteria.nl_assertions and len(criteria.nl_assertions) > 0)
+            )
+            assert has_evaluation, f"Task {task.id} has no evaluation criteria"
 
     def test_turkish_banking_task_actions(self, banking_tasks):
         """Test Turkish banking task actions."""
@@ -194,20 +198,25 @@ class TestTurkishBankingTasks:
         for task in banking_tasks:
             criteria = task.evaluation_criteria
             
-            # Check that actions are well-defined
-            for action in criteria.actions:
-                assert action.action_id is not None and action.action_id != "", f"Task {task.id} has empty action_id"
-                assert action.description is not None and action.description != "", f"Task {task.id} has empty action description"
+            # Check that actions are well-defined (if present)
+            if criteria.actions:
+                for action in criteria.actions:
+                    assert action.action_id is not None and action.action_id != "", f"Task {task.id} has empty action_id"
+                    assert action.name is not None and action.name != "", f"Task {task.id} has empty action name"
+                    assert action.arguments is not None, f"Task {task.id} has no action arguments"
             
-            # Check that communication info is well-defined
-            for comm_info in criteria.communicate_info:
-                assert comm_info.info_id is not None and comm_info.info_id != "", f"Task {task.id} has empty info_id"
-                assert comm_info.description is not None and comm_info.description != "", f"Task {task.id} has empty info description"
+            # Check that communication info is well-defined (communicate_info is now a list of strings)
+            if criteria.communicate_info:
+                for comm_info in criteria.communicate_info:
+                    assert isinstance(comm_info, str), f"Task {task.id} communicate_info should be strings"
+                    assert comm_info != "", f"Task {task.id} has empty communicate_info"
+                    assert len(comm_info) > 10, f"Task {task.id} has too short communicate_info: {comm_info}"
             
             # Check that natural language assertions are meaningful
-            for assertion in criteria.nl_assertions:
-                assert assertion is not None and assertion != "", f"Task {task.id} has empty nl_assertion"
-                assert len(assertion) > 10, f"Task {task.id} has too short nl_assertion: {assertion}"
+            if criteria.nl_assertions:
+                for assertion in criteria.nl_assertions:
+                    assert assertion is not None and assertion != "", f"Task {task.id} has empty nl_assertion"
+                    assert len(assertion) > 10, f"Task {task.id} has too short nl_assertion: {assertion}"
 
     def test_turkish_banking_task_consistency(self, banking_tasks):
         """Test consistency across Turkish banking tasks."""

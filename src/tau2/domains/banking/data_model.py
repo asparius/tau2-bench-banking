@@ -299,7 +299,7 @@ class BankingDB(DB):
         
         total_deposits = sum(
             account.balance for account in self.accounts
-            if account.account_type in [AccountType.CHECKING, AccountType.SAVINGS, AccountType.MONEY_MARKET]
+            if account.account_type in [AccountType.vadesiz_mevduat, AccountType.vadeli_mevduat, AccountType.doviz_hesabi]
         )
         
         total_loan_balance = sum(loan.current_balance for loan in self.loans)

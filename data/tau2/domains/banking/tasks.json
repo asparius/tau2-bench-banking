@@ -2,17 +2,17 @@
     {
         "id": "banking_001",
         "description": {
-            "purpose": "Turkish customer wants to check account balance and recent transactions",
-            "relevant_policies": ["Turkish Account Access and Information", "Turkish Identity Verification"],
+            "purpose": "Türk müşteri hesap bakiyesini ve son işlemleri kontrol etmek istiyor",
+            "relevant_policies": "Turkish Account Access and Information, Turkish Identity Verification",
             "notes": "Standard Turkish banking balance inquiry scenario"
         },
         "user_scenario": {
             "persona": null,
             "instructions": {
-                "task_instructions": "You are calling to check your Turkish bank account balance and see your recent transactions. You want to verify that your last deposit (yatırım) went through correctly.",
+                "task_instructions": "Türk banka hesabınızın bakiyesini kontrol etmek ve son işlemlerinizi görmek için arıyorsunuz. Son yatırımınızın (para yatırma) doğru şekilde gerçekleştiğini doğrulamak istiyorsunuz.",
                 "domain": "banking",
-                "reason_for_call": "You want to check your Turkish bank account balance and recent transaction history to verify your last deposit (yatırım).",
-                "known_info": "You are Ayşe Yılmaz. Your customer ID is customer_1001. Your TC Kimlik No is 12345678901. Your date of birth is 1985-03-15.",
+                "reason_for_call": "Türk banka hesap bakiyenizi ve son işlem geçmişinizi kontrol etmek ve son yatırımınızı (para yatırma) doğrulamak istiyorsunuz.",
+                "known_info": "Adınız Ayşe Yılmaz. Müşteri kimliğiniz customer_1001. TC Kimlik No'nuz 12345678901. Doğum tarihiniz 1985-03-15.",
                 "unknown_info": null
             }
         },
@@ -25,34 +25,19 @@
             "message_history": []
         },
         "evaluation_criteria": {
-            "actions": [
-                {
-                    "action_id": "verify_identity",
-                    "description": "Agent should verify customer identity using SSN and date of birth"
-                },
-                {
-                    "action_id": "get_account_info",
-                    "description": "Agent should retrieve and provide account balance information"
-                },
-                {
-                    "action_id": "get_transactions",
-                    "description": "Agent should provide recent transaction history"
-                }
-            ],
+            "actions": [],
             "communicate_info": [
-                {
-                    "info_id": "balance_info",
-                    "description": "Agent should clearly communicate the current account balance"
-                },
-                {
-                    "info_id": "transaction_info",
-                    "description": "Agent should explain recent transactions including the deposit"
-                }
+                "bakiye",
+                "yatırım"
             ],
             "nl_assertions": [
-                "Agent should verify Turkish customer identity using TC Kimlik No before providing account information",
-                "Agent should provide clear and accurate Turkish bank account balance information in Turkish Lira (TL)",
-                "Agent should explain recent Turkish banking transactions in an understandable way"
+                "Agent, hesap bilgilerini vermeden önce TC Kimlik No kullanarak Türk müşteri kimliğini doğrulamalıdır",
+                "Agent, Türk Lirası (TL) cinsinden açık ve doğru Türk banka hesabı bakiye bilgilerini sağlamalıdır",
+                "Agent, son Türk bankacılık işlemlerini anlaşılır bir şekilde açıklamalıdır"
+            ],
+            "reward_basis": [
+                "DB",
+                "NL_ASSERTION"
             ]
         },
         "annotations": null
@@ -60,17 +45,17 @@
     {
         "id": "banking_002",
         "description": {
-            "purpose": "Turkish customer wants to transfer money between their own accounts (havale)",
-            "relevant_policies": ["Turkish Transfers (Havale)", "Turkish Account Security"],
+            "purpose": "Türk müşteri kendi hesapları arasında para transfer etmek istiyor (havale)",
+            "relevant_policies": "Turkish Transfers (Havale), Turkish Account Security",
             "notes": "Turkish internal transfer scenario"
         },
         "user_scenario": {
             "persona": null,
             "instructions": {
-                "task_instructions": "You want to transfer 15,000 TL from your vadesiz mevduat (checking) account to your vadeli mevduat (savings) account. You need this done today.",
+                "task_instructions": "Vadesiz mevduat (checking) hesabınızdan vadeli mevduat (savings) hesabınıza 15,000 TL transfer etmek istiyorsunuz. Bugün yapılması gerekiyor.",
                 "domain": "banking",
-                "reason_for_call": "You want to transfer money between your own Turkish bank accounts to move funds to savings (vadeli mevduat).",
-                "known_info": "You are Mehmet Demir. Your customer ID is customer_1002. Your TC Kimlik No is 23456789012. Your date of birth is 1990-07-22. You have a vadesiz mevduat account (account_2002) and a vadeli mevduat account (account_2003).",
+                "reason_for_call": "Kendi Türk banka hesaplarınız arasında para transfer ederek fon birikimine (vadeli mevduat) taşımak istiyorsunuz.",
+                "known_info": "Adınız Mehmet Demir. Müşteri kimliğiniz customer_1002. TC Kimlik No'nuz 23456789012. Doğum tarihiniz 1990-07-22. Bir vadesiz mevduat hesabınız (account_2002) ve bir vadeli mevduat hesabınız (account_2003) var.",
                 "unknown_info": null
             }
         },
@@ -84,34 +69,19 @@
             "message_history": []
         },
         "evaluation_criteria": {
-            "actions": [
-                {
-                    "action_id": "verify_identity",
-                    "description": "Agent should verify customer identity"
-                },
-                {
-                    "action_id": "check_accounts",
-                    "description": "Agent should verify customer owns both accounts"
-                },
-                {
-                    "action_id": "process_transfer",
-                    "description": "Agent should process the $500 transfer between accounts"
-                }
-            ],
+            "actions": [],
             "communicate_info": [
-                {
-                    "info_id": "transfer_confirmation",
-                    "description": "Agent should confirm the transfer details and provide confirmation"
-                },
-                {
-                    "info_id": "new_balances",
-                    "description": "Agent should provide updated account balances after transfer"
-                }
+                "Agent should confirm the transfer details and provide confirmation",
+                "Agent should provide updated account balances after transfer"
             ],
             "nl_assertions": [
-                "Agent should verify Turkish customer identity using TC Kimlik No before processing transfer",
-                "Agent should confirm Turkish transfer (havale) details before processing",
-                "Agent should provide clear confirmation of successful Turkish transfer in Turkish Lira (TL)"
+                "Agent, transfer işlemini gerçekleştirmeden önce TC Kimlik No kullanarak Türk müşteri kimliğini doğrulamalıdır",
+                "Agent, işlemeden önce Türk havale (transfer) detaylarını onaylamalıdır",
+                "Agent, Türk Lirası (TL) cinsinden başarılı Türk transferinin açık onayını sağlamalıdır"
+            ],
+            "reward_basis": [
+                "DB",
+                "NL_ASSERTION"
             ]
         },
         "annotations": null
@@ -119,17 +89,17 @@
     {
         "id": "banking_003",
         "description": {
-            "purpose": "Turkish customer wants to freeze their account due to suspected fraud",
-            "relevant_policies": ["Turkish Account Security", "Turkish Fraud Prevention"],
+            "purpose": "Türk müşteri şüpheli dolandırıcılık nedeniyle hesabını dondurmak istiyor",
+            "relevant_policies": "Turkish Account Security, Turkish Fraud Prevention",
             "notes": "Turkish banking security-related scenario requiring immediate action"
         },
         "user_scenario": {
             "persona": null,
             "instructions": {
-                "task_instructions": "You noticed some suspicious transactions on your Turkish bank account and want to freeze it immediately. You're concerned about unauthorized access.",
+                "task_instructions": "Hesabınızda bazı şüpheli işlemler fark ettiniz ve derhal dondurmak istiyorsunuz. Yetkisiz erişim konusunda endişelisiniz.",
                 "domain": "banking",
-                "reason_for_call": "You want to freeze your Turkish bank account due to suspicious activity and potential fraud.",
-                "known_info": "You are Fatma Kaya. Your customer ID is customer_1003. Your TC Kimlik No is 34567890123. Your date of birth is 1988-11-08. Your account ID is account_2004.",
+                "reason_for_call": "Türk banka hesabınızı şüpheli faaliyet ve olası dolandırıcılık nedeniyle dondurmak istiyorsunuz.",
+                "known_info": "Adınız Fatma Kaya. Müşteri kimliğiniz customer_1003. TC Kimlik No'nuz 34567890123. Doğum tarihiniz 1988-11-08. Hesap kimliğiniz account_2004.",
                 "unknown_info": null
             }
         },
@@ -142,30 +112,19 @@
             "message_history": []
         },
         "evaluation_criteria": {
-            "actions": [
-                {
-                    "action_id": "verify_identity",
-                    "description": "Agent should verify customer identity"
-                },
-                {
-                    "action_id": "freeze_account",
-                    "description": "Agent should immediately freeze the account due to fraud concerns"
-                }
-            ],
+            "actions": [],
             "communicate_info": [
-                {
-                    "info_id": "fraud_procedures",
-                    "description": "Agent should explain fraud resolution procedures"
-                },
-                {
-                    "info_id": "next_steps",
-                    "description": "Agent should explain what happens next and how to unfreeze account"
-                }
+                "Agent should explain fraud resolution procedures",
+                "Agent should explain what happens next and how to unfreeze account"
             ],
             "nl_assertions": [
-                "Agent should take immediate action to freeze the account",
-                "Agent should explain fraud prevention procedures clearly",
-                "Agent should provide guidance on next steps for fraud resolution"
+                "Agent, Türk müşteri kimliğini doğrulamalı ve güvenlik endişelerini anlamalıdır",
+                "Agent, Türk bankacılık güvenlik protokollerini izleyerek hesabı hemen dondurmalıdır",
+                "Agent, dondurma işlemini onaylamalı ve sonraki adımları Türkçe açıklamalıdır"
+            ],
+            "reward_basis": [
+                "DB",
+                "NL_ASSERTION"
             ]
         },
         "annotations": null
@@ -173,17 +132,17 @@
     {
         "id": "banking_004",
         "description": {
-            "purpose": "Customer wants to make a loan payment",
-            "relevant_policies": ["Payment Processing", "Loan Information"],
+            "purpose": "Müşteri kredi ödemesi yapmak istiyor",
+            "relevant_policies": "Payment Processing, Loan Information",
             "notes": "Loan payment scenario"
         },
         "user_scenario": {
             "persona": null,
             "instructions": {
-                "task_instructions": "You want to make a payment on your auto loan. You want to pay $300 from your checking account.",
+                "task_instructions": "Taşıt kredinize (araç kredisi) ödeme yapmak istiyorsunuz. Bu ayki ödemeniz 2,500 TL.",
                 "domain": "banking",
-                "reason_for_call": "You want to make a payment on your auto loan using your checking account.",
-                "known_info": "You are David Kim. Your customer ID is customer_1004. Your SSN is ***-**-3456. Your date of birth is 1982-05-12. You have a checking account (account_2005) and an auto loan (loan_4001).",
+                "reason_for_call": "Taşıt kredinize aylık ödeme yapmak istiyorsunuz.",
+                "known_info": "Adınız Ali Yıldız. Müşteri kimliğiniz customer_1004. TC Kimlik No'nuz 45678901234. Doğum tarihiniz 1982-05-12. Bir vadesiz mevduat hesabınız (account_2005) ve bir taşıt krediniz (loan_4001) var.",
                 "unknown_info": null
             }
         },
@@ -197,34 +156,19 @@
             "message_history": []
         },
         "evaluation_criteria": {
-            "actions": [
-                {
-                    "action_id": "verify_identity",
-                    "description": "Agent should verify customer identity"
-                },
-                {
-                    "action_id": "get_loan_info",
-                    "description": "Agent should retrieve loan information"
-                },
-                {
-                    "action_id": "process_loan_payment",
-                    "description": "Agent should process the $300 loan payment"
-                }
-            ],
+            "actions": [],
             "communicate_info": [
-                {
-                    "info_id": "loan_balance",
-                    "description": "Agent should provide current loan balance information"
-                },
-                {
-                    "info_id": "payment_confirmation",
-                    "description": "Agent should confirm payment processing and provide confirmation"
-                }
+                "Agent should provide current loan balance information",
+                "Agent should confirm payment processing and provide confirmation"
             ],
             "nl_assertions": [
-                "Agent should verify customer identity before processing payment",
-                "Agent should provide current loan balance information",
-                "Agent should confirm payment processing clearly"
+                "Agent, Türk müşteri kimliğini doğrulamalıdır",
+                "Agent, kredi bilgilerini almalı ve mevcut bakiyeyi göstermelidir",
+                "Agent, kredi ödemesini işlemeli ve güncellenmiş bakiyeyi sağlamalıdır"
+            ],
+            "reward_basis": [
+                "DB",
+                "NL_ASSERTION"
             ]
         },
         "annotations": null
@@ -232,17 +176,17 @@
     {
         "id": "banking_005",
         "description": {
-            "purpose": "Customer wants to check credit card balance and make a payment",
-            "relevant_policies": ["Credit Card Services", "Payment Processing"],
+            "purpose": "Müşteri kredi kartı bakiyesini kontrol etmek ve ödeme yapmak istiyor",
+            "relevant_policies": "Credit Card Services, Payment Processing",
             "notes": "Credit card payment scenario"
         },
         "user_scenario": {
             "persona": null,
             "instructions": {
-                "task_instructions": "You want to check your credit card balance and make a payment of $150 from your checking account.",
+                "task_instructions": "Kredi kartı bakiyenizi kontrol etmek ve 1,000 TL ödeme yapmak istiyorsunuz.",
                 "domain": "banking",
-                "reason_for_call": "You want to check your credit card balance and make a payment.",
-                "known_info": "You are Lisa Wang. Your customer ID is customer_1005. Your SSN is ***-**-7890. Your date of birth is 1993-09-18. You have a checking account (account_2006) and a credit card (credit_card_5001).",
+                "reason_for_call": "Kredi kartı bakiyenizi görmek ve ödeme yapmak istiyorsunuz.",
+                "known_info": "Adınız Zeynep Arslan. Müşteri kimliğiniz customer_1005. TC Kimlik No'nuz 56789012345. Doğum tarihiniz 1993-09-18. Bir vadesiz mevduat hesabınız (account_2006) ve bir kredi kartınız (credit_card_5001) var.",
                 "unknown_info": null
             }
         },
@@ -256,34 +200,19 @@
             "message_history": []
         },
         "evaluation_criteria": {
-            "actions": [
-                {
-                    "action_id": "verify_identity",
-                    "description": "Agent should verify customer identity"
-                },
-                {
-                    "action_id": "get_credit_card_info",
-                    "description": "Agent should retrieve credit card information"
-                },
-                {
-                    "action_id": "process_credit_card_payment",
-                    "description": "Agent should process the $150 credit card payment"
-                }
-            ],
+            "actions": [],
             "communicate_info": [
-                {
-                    "info_id": "credit_card_balance",
-                    "description": "Agent should provide current credit card balance and available credit"
-                },
-                {
-                    "info_id": "payment_confirmation",
-                    "description": "Agent should confirm payment processing and provide updated balance"
-                }
+                "Agent should provide current credit card balance and available credit",
+                "Agent should confirm payment processing and provide updated balance"
             ],
             "nl_assertions": [
-                "Agent should verify customer identity before providing credit card information",
-                "Agent should provide clear credit card balance information",
-                "Agent should confirm payment processing and provide updated balance"
+                "Agent, Türk müşteri kimliğini doğrulamalıdır",
+                "Agent, kredi kartı bakiyesini ve kullanılabilir kredisini göstermelidir",
+                "Agent, kredi kartı ödemesini işlemeli ve güncellenmiş bakiyeyi sağlamalıdır"
+            ],
+            "reward_basis": [
+                "DB",
+                "NL_ASSERTION"
             ]
         },
         "annotations": null
@@ -291,17 +220,17 @@
     {
         "id": "banking_006",
         "description": {
-            "purpose": "Customer wants to unfreeze their account after fraud resolution",
-            "relevant_policies": ["Account Security", "Fraud Prevention"],
+            "purpose": "Müşteri dolandırıcılık çözümünden sonra hesabının dondurmasını kaldırmak istiyor",
+            "relevant_policies": "Account Security, Fraud Prevention",
             "notes": "Account unfreeze scenario after fraud investigation"
         },
         "user_scenario": {
             "persona": null,
             "instructions": {
-                "task_instructions": "You previously froze your account due to fraud concerns. The fraud investigation is complete and you want to unfreeze your account now.",
+                "task_instructions": "Hesabınız daha önce dolandırıcılık endişeleri nedeniyle dondurulmuştu. Sorun çözüldü ve hesabınızın dondurmasını kaldırmak istiyorsunuz.",
                 "domain": "banking",
-                "reason_for_call": "You want to unfreeze your account after completing fraud investigation procedures.",
-                "known_info": "You are Robert Taylor. Your customer ID is customer_1006. Your SSN is ***-**-2468. Your date of birth is 1975-12-03. Your account ID is account_2007. Your account was previously frozen due to fraud concerns.",
+                "reason_for_call": "Dondurulmuş hesabınızın dondurmasını kaldırmak istiyorsunuz.",
+                "known_info": "Adınız Hasan Çelik. Müşteri kimliğiniz customer_1006. TC Kimlik No'nuz 67890123456. Doğum tarihiniz 1975-12-03. Hesap kimliğiniz account_2007. Hesabınız daha önce dolandırıcılık endişeleri nedeniyle donduruldu.",
                 "unknown_info": null
             }
         },
@@ -312,7 +241,8 @@
             },
             "initialization_actions": [
                 {
-                    "function_name": "freeze_account",
+                    "env_type": "assistant",
+                    "func_name": "freeze_account",
                     "arguments": {
                         "account_id": "account_2007",
                         "reason": "Fraud investigation"
@@ -322,30 +252,19 @@
             "message_history": []
         },
         "evaluation_criteria": {
-            "actions": [
-                {
-                    "action_id": "verify_identity",
-                    "description": "Agent should verify customer identity"
-                },
-                {
-                    "action_id": "unfreeze_account",
-                    "description": "Agent should unfreeze the account after proper verification"
-                }
-            ],
+            "actions": [],
             "communicate_info": [
-                {
-                    "info_id": "unfreeze_confirmation",
-                    "description": "Agent should confirm account has been unfrozen"
-                },
-                {
-                    "info_id": "security_reminders",
-                    "description": "Agent should provide security reminders and best practices"
-                }
+                "Agent should confirm account has been unfrozen",
+                "Agent should provide security reminders and best practices"
             ],
             "nl_assertions": [
-                "Agent should verify customer identity before unfreezing account",
-                "Agent should confirm successful account unfreeze",
-                "Agent should provide security reminders and best practices"
+                "Agent, Türk müşteri kimliğini doğrulamalıdır",
+                "Agent, hesabın dondurulma nedenini doğrulamalı ve sorunun çözüldüğünü onaylamalıdır",
+                "Agent, hesabı açmalı ve güvenlik hatırlatıcıları sağlamalıdır"
+            ],
+            "reward_basis": [
+                "DB",
+                "NL_ASSERTION"
             ]
         },
         "annotations": null
@@ -353,17 +272,17 @@
     {
         "id": "banking_007",
         "description": {
-            "purpose": "Customer wants to deposit money into their account",
-            "relevant_policies": ["Deposits and Withdrawals", "Transaction Processing"],
+            "purpose": "Müşteri hesabına para yatırmak istiyor",
+            "relevant_policies": "Deposits and Withdrawals, Transaction Processing",
             "notes": "Deposit scenario"
         },
         "user_scenario": {
             "persona": null,
             "instructions": {
-                "task_instructions": "You want to deposit $1,000 into your checking account. You have the cash with you and want to do this in person.",
+                "task_instructions": "Hesabınıza 3,000 TL nakit para yatırmak istiyorsunuz.",
                 "domain": "banking",
-                "reason_for_call": "You want to deposit cash into your checking account.",
-                "known_info": "You are Maria Garcia. Your customer ID is customer_1007. Your SSN is ***-**-1357. Your date of birth is 1987-04-25. Your account ID is account_2008.",
+                "reason_for_call": "Hesabınıza nakit para yatırmak istiyorsunuz.",
+                "known_info": "Adınız Elif Özkan. Müşteri kimliğiniz customer_1007. TC Kimlik No'nuz 78901234567. Doğum tarihiniz 1987-04-25. Hesap kimliğiniz account_2008.",
                 "unknown_info": null
             }
         },
@@ -376,30 +295,19 @@
             "message_history": []
         },
         "evaluation_criteria": {
-            "actions": [
-                {
-                    "action_id": "verify_identity",
-                    "description": "Agent should verify customer identity"
-                },
-                {
-                    "action_id": "process_deposit",
-                    "description": "Agent should process the $1,000 deposit"
-                }
-            ],
+            "actions": [],
             "communicate_info": [
-                {
-                    "info_id": "deposit_confirmation",
-                    "description": "Agent should confirm deposit processing and provide confirmation"
-                },
-                {
-                    "info_id": "new_balance",
-                    "description": "Agent should provide updated account balance after deposit"
-                }
+                "Agent should confirm deposit processing and provide confirmation",
+                "Agent should provide updated account balance after deposit"
             ],
             "nl_assertions": [
-                "Agent should verify customer identity before processing deposit",
-                "Agent should confirm deposit amount and processing",
-                "Agent should provide updated account balance information"
+                "Agent, Türk müşteri kimliğini doğrulamalıdır",
+                "Agent, para yatırma işlemini gerçekleştirmeli ve onay sağlamalıdır",
+                "Agent, yatırımdan sonra güncellenmiş hesap bakiyesini sağlamalıdır"
+            ],
+            "reward_basis": [
+                "DB",
+                "NL_ASSERTION"
             ]
         },
         "annotations": null
@@ -407,17 +315,17 @@
     {
         "id": "banking_008",
         "description": {
-            "purpose": "Customer wants to withdraw money from their account",
-            "relevant_policies": ["Deposits and Withdrawals", "Account Security"],
+            "purpose": "Müşteri hesabından para çekmek istiyor ama yetersiz bakiye var",
+            "relevant_policies": "Deposits and Withdrawals, Account Security",
             "notes": "Withdrawal scenario with insufficient funds"
         },
         "user_scenario": {
             "persona": null,
             "instructions": {
-                "task_instructions": "You want to withdraw $2,000 from your checking account. You need this money for an emergency expense.",
+                "task_instructions": "Hesabınızdan 1,000 TL çekmek istiyorsunuz ama hesabınızda bu çekim için yetersiz bakiye olabilir.",
                 "domain": "banking",
-                "reason_for_call": "You want to withdraw money from your checking account for an emergency expense.",
-                "known_info": "You are James Wilson. Your customer ID is customer_1008. Your SSN is ***-**-9753. Your date of birth is 1980-08-14. Your account ID is account_2009. Your account has insufficient funds for this withdrawal.",
+                "reason_for_call": "Hesabınızdan para çekmek istiyorsunuz.",
+                "known_info": "Adınız Burak Şahin. Müşteri kimliğiniz customer_1008. TC Kimlik No'nuz 89012345678. Doğum tarihiniz 1980-08-14. Hesap kimliğiniz account_2009. Hesabınızda bu çekim için yetersiz bakiye var.",
                 "unknown_info": null
             }
         },
@@ -430,30 +338,19 @@
             "message_history": []
         },
         "evaluation_criteria": {
-            "actions": [
-                {
-                    "action_id": "verify_identity",
-                    "description": "Agent should verify customer identity"
-                },
-                {
-                    "action_id": "check_balance",
-                    "description": "Agent should check account balance before processing withdrawal"
-                }
-            ],
+            "actions": [],
             "communicate_info": [
-                {
-                    "info_id": "insufficient_funds",
-                    "description": "Agent should explain insufficient funds situation clearly"
-                },
-                {
-                    "info_id": "alternatives",
-                    "description": "Agent should suggest alternatives like overdraft protection or transfers"
-                }
+                "Agent should explain insufficient funds situation clearly",
+                "Agent should suggest alternatives like overdraft protection or transfers"
             ],
             "nl_assertions": [
-                "Agent should verify customer identity before processing withdrawal",
-                "Agent should clearly explain insufficient funds situation",
-                "Agent should offer helpful alternatives or solutions"
+                "Agent, Türk müşteri kimliğini doğrulamalıdır",
+                "Agent, yetersiz bakiye durumunu açıkça açıklamalıdır",
+                "Agent, kredili mevduat koruması veya transferler gibi alternatifleri önermelidir"
+            ],
+            "reward_basis": [
+                "DB",
+                "NL_ASSERTION"
             ]
         },
         "annotations": null

@@ -128,6 +128,9 @@ def run_domain(config: RunConfig) -> Results:
     if save_to is None:
         save_to = make_run_name(config)
     save_to = DATA_DIR / "simulations" / f"{save_to}.json"
+    # Use ALL_WITH_NL_ASSERTIONS for banking domain (supports Turkish LLM evaluation)
+    evaluation_type = EvaluationType.ALL_WITH_NL_ASSERTIONS if config.domain == "banking" else EvaluationType.ALL
+    
     simulation_results = run_tasks(
         domain=config.domain,
         tasks=tasks,
@@ -142,7 +145,7 @@ def run_domain(config: RunConfig) -> Results:
         max_errors=config.max_errors,
         save_to=save_to,
         console_display=True,
-        evaluation_type=EvaluationType.ALL,
+        evaluation_type=evaluation_type,
         max_concurrency=config.max_concurrency,
         seed=config.seed,
         log_level=config.log_level,

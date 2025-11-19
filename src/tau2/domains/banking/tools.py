@@ -170,6 +170,8 @@ class BankingTools(ToolKitBase):
             "monthly_fee": account.monthly_fee,
             "overdraft_limit": account.overdraft_limit,
             "created_date": account.created_date.isoformat(),
+            "freeze_reason": account.freeze_reason,
+            "freeze_date": account.freeze_date.isoformat() if account.freeze_date else None,
         }
 
     @is_tool(ToolType.READ)
@@ -189,6 +191,8 @@ class BankingTools(ToolKitBase):
                 "status": account.status.value,
                 "balance": account.balance,
                 "available_balance": account.available_balance,
+                "freeze_reason": account.freeze_reason,
+                "freeze_date": account.freeze_date.isoformat() if account.freeze_date else None,
             })
         
         return {"accounts": account_list, "total_accounts": len(account_list)}

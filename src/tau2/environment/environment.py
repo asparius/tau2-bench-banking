@@ -328,11 +328,49 @@ class Environment:
                 expected_content = json.loads(expected_response.content)
             except json.JSONDecodeError:
                 expected_content = expected_response.content
-            if content != expected_content:
+            
+            # Normalize timestamps in transaction data for comparison
+            # Banking domain generates timestamps dynamically, so we need to ignore them
+            normalized_content = self._normalize_timestamps(content)
+            normalized_expected = self._normalize_timestamps(expected_content)
+            
+            if normalized_content != normalized_expected:
                 raise ValueError(
                     f"Tool call:\n{tool_call}\n\nReturned:\n{response}\n\nExpected:\n{expected_response}"
                 )
         self.sync_tools()
+
+    def _normalize_timestamps(self, data: Any) -> Any:
+        """
+        Normalize timestamps in data structures for comparison.
+        Replaces timestamp strings with a placeholder to ignore time differences.
+        This is needed because banking domain generates timestamps dynamically.
+        """
+        if isinstance(data, dict):
+            normalized = {}
+            for key, value in data.items():
+                # Normalize transaction date fields (common in banking domain)
+                if key in ("date", "transaction_date", "posted_date") and isinstance(value, str):
+                    # Check if it's a timestamp string (ISO format like "2025-11-19T13:27:52.238259")
+                    if "T" in value:
+                        # Keep only the date part, normalize time to 00:00:00
+                        # This allows comparison while ignoring exact timestamp differences
+                        date_part = value.split("T")[0]
+                        normalized[key] = date_part + "T00:00:00"
+                    else:
+                        # Not a timestamp, recurse to handle nested structures
+                        normalized[key] = self._normalize_timestamps(value)
+                elif isinstance(value, (list, dict)):
+                    # Recurse into nested structures
+                    normalized[key] = self._normalize_timestamps(value)
+                else:
+                    normalized[key] = value
+            return normalized
+        elif isinstance(data, list):
+            # Handle lists (e.g., transactions list)
+            return [self._normalize_timestamps(item) for item in data]
+        else:
+            return data
 
     @classmethod
     def to_json_str(cls, resp: Any) -> str:
@@ -413,3 +451,4 @@ class Environment:
             role="tool",
             error=error,
         )
+

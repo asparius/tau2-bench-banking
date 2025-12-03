@@ -1,4 +1,5 @@
 import json
+import re
 
 from tau2.config import DEFAULT_LLM_NL_ASSERTIONS, DEFAULT_LLM_NL_ASSERTIONS_ARGS
 from tau2.data_model.message import Message, SystemMessage, UserMessage
@@ -117,7 +118,50 @@ class NLAssertionsEvaluator:
             messages=messages,
             **DEFAULT_LLM_NL_ASSERTIONS_ARGS,
         )
-        result_data = json.loads(assistant_message.content)
+        
+        # Parse JSON response, handling cases where model returns text with JSON
+        content = assistant_message.content or ""
+        if not content.strip():
+            # Empty response - return all assertions as not met
+            return [
+                NLAssertionCheck(
+                    nl_assertion=assertion,
+                    met=False,
+                    justification="Empty response from evaluator model",
+                )
+                for assertion in nl_assertions
+            ]
+        
+        # Try to extract JSON from response (might be wrapped in markdown or text)
+        try:
+            result_data = json.loads(content)
+        except json.JSONDecodeError:
+            # Try to extract JSON from markdown code blocks or text
+            json_match = re.search(r'\{[^{}]*"results"[^{}]*\[.*?\]\s*\}', content, re.DOTALL)
+            if json_match:
+                try:
+                    result_data = json.loads(json_match.group(0))
+                except json.JSONDecodeError:
+                    # If still fails, return all as not met
+                    return [
+                        NLAssertionCheck(
+                            nl_assertion=assertion,
+                            met=False,
+                            justification=f"Could not parse JSON from evaluator response: {content[:200]}",
+                        )
+                        for assertion in nl_assertions
+                    ]
+            else:
+                # No JSON found - return all as not met
+                return [
+                    NLAssertionCheck(
+                        nl_assertion=assertion,
+                        met=False,
+                        justification=f"Invalid JSON response from evaluator: {content[:200]}",
+                    )
+                    for assertion in nl_assertions
+                ]
+        
         return [
             NLAssertionCheck(
                 nl_assertion=result["expectedOutcome"],
@@ -126,3 +170,4 @@ class NLAssertionsEvaluator:
             )
             for result in result_data.get("results", [])
         ]
+

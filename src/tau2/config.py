@@ -1,3 +1,5 @@
+import os
+
 # SIMULATION
 DEFAULT_MAX_STEPS = 200
 DEFAULT_MAX_ERRORS = 10
@@ -17,7 +19,9 @@ DEFAULT_LLM_TEMPERATURE_USER = 0.0
 DEFAULT_LLM_ARGS_AGENT = {"temperature": DEFAULT_LLM_TEMPERATURE_AGENT}
 DEFAULT_LLM_ARGS_USER = {"temperature": DEFAULT_LLM_TEMPERATURE_USER}
 
-DEFAULT_LLM_NL_ASSERTIONS = "gpt-4o-mini"
+# Use environment variable if set, otherwise default
+# For local vLLM servers, set this to your model name
+DEFAULT_LLM_NL_ASSERTIONS = os.environ.get("TAU2_LLM_NL_ASSERTIONS", "gpt-4o-mini")
 DEFAULT_LLM_NL_ASSERTIONS_TEMPERATURE = 0.0
 DEFAULT_LLM_NL_ASSERTIONS_ARGS = {"temperature": DEFAULT_LLM_NL_ASSERTIONS_TEMPERATURE}
 
@@ -43,3 +47,4 @@ USE_LANGFUSE = False  # If True, make sure all the env variables are set for lan
 
 # API
 API_PORT = 8000
+

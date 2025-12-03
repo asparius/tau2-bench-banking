@@ -1,4 +1,5 @@
 import json
+import os
 import re
 from typing import Any, Optional
 
@@ -95,7 +96,12 @@ def get_response_cost(response: ModelResponse) -> float:
     try:
         cost = completion_cost(completion_response=response)
     except Exception as e:
-        logger.error(e)
+        # For local models, cost calculation often fails - that's fine, return 0.0
+        # Only log as warning, not error, since this is expected for unmapped models
+        if "isn't mapped yet" in str(e) or "model_prices" in str(e):
+            logger.debug(f"Model not in pricing database (local model?): {e}")
+        else:
+            logger.warning(f"Could not calculate cost: {e}")
         return 0.0
     return cost
 
@@ -177,6 +183,66 @@ def to_litellm_messages(messages: list[Message]) -> list[dict]:
     return litellm_messages
 
 
+def parse_json_wrapped_content(content: str) -> str:
+    """
+    Parse JSON-wrapped content from vLLM (e.g., {"type": "message", "content": "..."} or {"message": "..."}).
+    Returns the extracted content string.
+    """
+    if not content or not content.strip().startswith("{"):
+        return content
+    
+    try:
+        # Try to parse as JSON
+        parsed = json.loads(content.strip())
+        if isinstance(parsed, dict):
+            # Try "content" key first (OpenAI format)
+            if "content" in parsed:
+                return parsed["content"]
+            # Try "message" key (vLLM qwen3_xml format)
+            if "message" in parsed:
+                return parsed["message"]
+            # If it's a dict with "type": "message", extract content
+            if parsed.get("type") == "message" and "content" in parsed:
+                return parsed["content"]
+    except json.JSONDecodeError:
+        # Not valid JSON, return as-is
+        pass
+    
+    return content
+
+
+def parse_xml_tool_calls(content: str) -> tuple[str, list[ToolCall]]:
+    """
+    Parse XML-formatted tool calls from content (e.g., from vLLM with qwen3_xml parser).
+    Returns (cleaned_content, tool_calls).
+    """
+    tool_calls = []
+    # Pattern to match <tool_call>...</tool_call> blocks
+    pattern = r'<tool_call>\s*(.*?)\s*</tool_call>'
+    matches = re.findall(pattern, content, re.DOTALL)
+    
+    for match in matches:
+        try:
+            # Parse the JSON inside the tool_call tags
+            tool_data = json.loads(match.strip())
+            if isinstance(tool_data, dict) and "name" in tool_data:
+                tool_calls.append(
+                    ToolCall(
+                        id=f"call_{len(tool_calls)}",  # Generate a simple ID
+                        name=tool_data["name"],
+                        arguments=tool_data.get("arguments", {}),
+                    )
+                )
+        except json.JSONDecodeError:
+            logger.warning(f"Failed to parse tool call JSON: {match[:100]}")
+            continue
+    
+    # Remove tool_call XML tags from content
+    cleaned_content = re.sub(pattern, '', content, flags=re.DOTALL).strip()
+    
+    return cleaned_content, tool_calls
+
+
 def generate(
     model: str,
     messages: list[Message],
@@ -201,18 +267,44 @@ def generate(
 
     if model.startswith("claude") and not ALLOW_SONNET_THINKING:
         kwargs["thinking"] = {"type": "disabled"}
+    
+    # Handle OpenAI-compatible local servers (e.g., vLLM)
+    # If OPENAI_API_BASE is set, explicitly pass api_base to LiteLLM
+    openai_api_base = os.environ.get("OPENAI_API_BASE")
+    is_local_server = False
+    if openai_api_base and "api_base" not in kwargs:
+        kwargs["api_base"] = openai_api_base
+        is_local_server = "localhost" in openai_api_base or "127.0.0.1" in openai_api_base
+        # For OpenAI-compatible endpoints, LiteLLM needs to know it's an OpenAI provider
+        # If model name doesn't match OpenAI patterns, prefix with "openai/" to force provider detection
+        # LiteLLM will strip the "openai/" prefix when sending to the server
+        if not any(model.startswith(prefix) for prefix in ("openai/", "gpt-", "o1-", "o3-", "text-", "davinci", "curie", "babbage", "ada")):
+            # Use "openai/" prefix to tell LiteLLM this is an OpenAI-compatible endpoint
+            # LiteLLM will send the model name (without prefix) to the custom api_base
+            model = f"openai/{model}"
+            logger.debug(f"Using OpenAI-compatible endpoint. Model: {model}, API Base: {openai_api_base}")
+    
     litellm_messages = to_litellm_messages(messages)
     tools = [tool.openai_schema for tool in tools] if tools else None
+    # For vLLM with reasoning models and qwen3_xml parser, tool calling can be tricky
+    # Don't set tool_choice - let the model decide naturally
+    # The qwen3_xml parser will handle XML-formatted tool calls if the model chooses to use them
     if tools and tool_choice is None:
-        tool_choice = "auto"
+        # For local servers with reasoning, don't force tool_choice
+        # Let the model naturally decide whether to use tools or respond with text
+        if is_local_server:
+            tool_choice = None  # Don't set tool_choice - let model decide
+        else:
+            tool_choice = "auto"
     try:
-        response = completion(
-            model=model,
-            messages=litellm_messages,
-            tools=tools,
-            tool_choice=tool_choice,
-            **kwargs,
-        )
+        # Only pass tool_choice if it's explicitly set (not None)
+        completion_kwargs = {"model": model, "messages": litellm_messages, **kwargs}
+        if tools:
+            completion_kwargs["tools"] = tools
+        if tool_choice is not None:
+            completion_kwargs["tool_choice"] = tool_choice
+        
+        response = completion(**completion_kwargs)
     except Exception as e:
         logger.error(e)
         raise e
@@ -229,7 +321,22 @@ def generate(
     assert response.message.role == "assistant", (
         "The response should be an assistant message"
     )
+    
+    # Handle reasoning models (vLLM with --enable-reasoning)
+    # vLLM returns both reasoning_content (thinking) and content (final answer)
+    # We use content (final answer) for the actual response
     content = response.message.content
+    reasoning_content = getattr(response.message, 'reasoning_content', None)
+    
+    # Log reasoning if present (for debugging)
+    if reasoning_content:
+        logger.debug(f"Reasoning content: {reasoning_content[:200]}...")
+    
+    # Parse JSON-wrapped content (vLLM with qwen3_xml may return {"type": "message", "content": "..."})
+    if content:
+        content = parse_json_wrapped_content(content)
+    
+    # First, try to get structured tool_calls from the response
     tool_calls = response.message.tool_calls or []
     tool_calls = [
         ToolCall(
@@ -239,6 +346,16 @@ def generate(
         )
         for tool_call in tool_calls
     ]
+    
+    # If no structured tool_calls but content contains XML tool calls (vLLM with qwen3_xml),
+    # parse them from the content
+    if not tool_calls and content and "<tool_call>" in content:
+        cleaned_content, xml_tool_calls = parse_xml_tool_calls(content)
+        if xml_tool_calls:
+            content = cleaned_content
+            tool_calls = xml_tool_calls
+            logger.debug(f"Parsed {len(xml_tool_calls)} tool calls from XML content")
+    
     tool_calls = tool_calls or None
 
     message = AssistantMessage(
@@ -287,3 +404,4 @@ def get_token_usage(messages: list[Message]) -> dict:
         usage["completion_tokens"] += message.usage["completion_tokens"]
         usage["prompt_tokens"] += message.usage["prompt_tokens"]
     return usage
+
